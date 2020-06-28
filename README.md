@@ -3,13 +3,13 @@
 これは2020/07/04に行われた[Tokyo AEC Industry Dev Group](https://www.meetup.com/ja-JP/Tokyo-AEC-Industry-Dev-Group/) でのハンズオンの資料になります。
 RhinoInside と Unity を使ったボールをゴールへ運ぶゲームのつくり方のハンズオンになります。
 
-# 完成品のイメージ
+## 完成品のイメージ
 
-<img src=./images/RUIGame.gif width=500>
+<img src=https://github.com/hrntsm/RhinoInsideGame/blob/master/images/RIUGame.gif width=500>
 
-# ハンズオン
+## ハンズオン
 
-## 0. 環境構築
+### 0. 環境構築
 
 + RhinoInsideのリポをクローンしておく（いくつかのファイルを使う）
   + [ここ](https://github.com/mcneel/rhino.inside)からクローンorダウンロード
@@ -32,7 +32,7 @@ RhinoInside と Unity を使ったボールをゴールへ運ぶゲームのつ�
     + エディタの設定はUnityの以下から設定
     <img src=./images/EditorSettings.png width=500>
 
-## 1. UnityでRhinoを使う
+### 1. UnityでRhinoを使う
 
 + Asset下にScriptsという名前のフォルダを作成してそこに"Convert.cs"を入れる。"LoftSurface.cs"を作る
 + Asset下にPluginsという名前のフォルダを作成してそこに"RhinoCommon.dll"を入れる。
@@ -66,7 +66,9 @@ public class RhinoInsideUI : MonoBehaviour
 
 + ロフトサーフェスを作る
   + まずはRhino内で作ってみる。
+  <img src=./images/loftsurf.png width=500>
   + 次にRhinoInside を使って作ってみる。
++ コントロールポイントをまず作る
 
 ```cs
 public class RhinoInsideUI : MonoBehaviour
@@ -119,4 +121,63 @@ public class RhinoInsideUI : MonoBehaviour
 }
 ```
 
-**これで RhinoInside はほぼ終わり**
++ 作ったコントロールポイントを使ってロフトサーフェスを作る
+
+```cs
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Rhino.Geometry;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+#if UNITY_EDITOR
+[ExecuteInEditMode]
+#endif
+public class LoftSurface : MonoBehaviour
+{
+    void Update()
+    {
+        var controlPoints  = new List<List<Vector3>>();
+
+        int i = 0;
+        List<Vector3> controlPointsRow = null;
+        foreach (UnityEngine.Transform controlSphere in transform)
+        {
+            if ((i++ % 4) == 0)
+            {
+                controlPointsRow = new List<Vector3>(4);
+                controlPoints.Add(controlPointsRow);
+            }
+            controlPointsRow.Add(controlSphere.position);
+        }
+        gameObject.GetComponent<MeshFilter>().mesh = CreateLoft(controlPoints);
+    }
+
+    private UnityEngine.Mesh CreateLoft(List<List<Vector3>> controlPoints)
+    {
+        if (controlPoints.Count > 0 )
+        {
+            var profileCurves = new List<Curve>();
+            foreach (var controlPointsRow in controlPoints)
+            {
+                profileCurves.Add(Curve.CreateInterpolatedCurve(controlPointsRow.ToRhino(), 3));
+            }
+            Brep brep = Brep.CreateFromLoft(profileCurves, Point3d.Unset,Point3d.Unset, LoftType.Normal, false)[0];
+            Rhino.Geometry.Mesh mesh = Rhino.Geometry.Mesh.CreateFromBrep(brep, MeshingParameters.Default)[0];
+            return mesh.ToHost();
+        }
+        return null;
+    }
+}
+```
+
+これで"Rhino/Start RhinoInside" をした後に、"Rhino/Create Loft Surface"を押すとロフトサーフェスが作成されるはずです。
+ここまでの内容は、part1のフォルダのデータになっています。
+<img src=./images/LoftSurface.png width=500>
+
+**これで RhinoInside は終わり。あとはUnityのみになります。**
+
+---
