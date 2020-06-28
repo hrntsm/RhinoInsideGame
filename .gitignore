@@ -70,3 +70,7 @@ Thumbs.db
 */Assets/Plugins/RhinoCommon.dll.meta
 */Assets/Scripts/Convert.cs
 */Assets/Scripts/Convert.cs.meta
+final version/Assets/Rhino/RhinoCommon.dll
+final version/Assets/Rhino/RhinoInside.asmdef
+final version/Assets/Rhino/RhinoInside.asmdef.meta
+final version/Assets/Rhino/RhinoCommon.dll.meta

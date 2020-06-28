@@ -18,7 +18,7 @@ RhinoInside と Unity を使ったボールをゴールへ運ぶゲームのつ�
 + Unity2019.4.1.f1
   + [ここ](https://unity3d.com/jp/get-unity/download)からダウンロード
 
-+ Rider2020.1
++ Rider2020.1 (スクリプトエディタ)
   + コードを書くエディタです。VisualStudioやVSCodeなどでもよいです。
   + Unity関連のデータをダウンロードをしておいてください。
     + Riderの場合
@@ -117,7 +117,9 @@ public class RhinoInsideUI : MonoBehaviour
         {
             for (int j = 0; j < 4; j++)
             {
+                int num = 4 * i + j;
                 var controlSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                controlSphere.name = "Sphere" + num;
                 controlSphere.transform.parent = surface.transform;
                 controlSphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                 controlSphere.transform.position = new Vector3( i * 5f, 0, j * 5f);
@@ -182,8 +184,14 @@ public class LoftSurface : MonoBehaviour
 ```
 
 これで"Rhino/Start RhinoInside" をした後に、"Rhino/Create Loft Surface"を押すとロフトサーフェスが作成されるはずです。
-ここまでの内容は、part1のフォルダのデータになっています。
+
 <img src=./images/LoftSurface.png width=500>
+
+ここまでの内容は、part1 のフォルダのデータになっています。
+
+#### 1.4 Unityのデバッグの仕方
+
++ Unityにエディタをアタッチすることでデバッグできます
 
 **これで RhinoInside は終わり。あとはUnityのみになります。**
 
@@ -270,8 +278,8 @@ public class Respawn : MonoBehaviour
    + スケールも好きな値に設定する
    + 単純にこれがゲームの難しさになるので注意
 3. Add Component で Goal.cs を追加する。
-4. クリア時の画面を作成（次のところでまとめて作成するので後回し）
-5. クリアなのでBallを消す
+4. ゲームクリア時の画面を作成（次のところでまとめて作成するので後回し）
+5. ゲームクリアなのでBallを消す
    + SerializeField をつけるとエディタ上から値を設定できるようになる
    + Ballをエディタ上で設定する
 
@@ -279,7 +287,7 @@ public class Respawn : MonoBehaviour
 public class Goal : MonoBehaviour
 {
   [SerializeField] private GameObject ball;
-  private void OnTriggerEnter(Collider other)
+  private void OnCollisionEnter(Collision other)
   {
     ball.SetActive(false);
   }
@@ -292,9 +300,165 @@ public class Goal : MonoBehaviour
 
 <img src=./images/GameScene.png width=500>
 
-+ ここまでのデータは part2 に入っているものになっています
++ ここまでのデータは part2 のフォルダ に入っているものになっています
 
 ---
 
 ### 3. UIを作っていく
 
+#### 3.1 クリア画面を作る
+
+1. Hierarchyで右クリックして、UIからTextを選ぶとHierarchyにCanvasとEventSystemとCanvasの子にTextが作成される
+   + CanvasのサイズはGameウインドウのサイズによるので注意してください
+
+    <img src=./images/UI.png width=500>
+
+2. Textにクリアを示す文字を入れる
+3. Panelを使って背景を入れる
+4. Panelの名前をGoalPanelにして、Textを子にする
+5. GoalPanelを非アクティブにする
+6. 2.3で作成したGoal.csに下記を追記して、BallがGoalに入った時にGoalPanelをアクティブにして表示されるようにする
+   + エディタからGoalPanelをセットしておく
+
+```cs
+public class Goal : MonoBehaviour
+{
+  [SerializeField] private GameObject ball;
+  [SerializeField] private GameObject goalPanel; // 追加
+  private void OnTriggerEnter(Collider other)
+  {
+    goalPanel.gameObject.SetActive(true); // 追加
+    ball.SetActive(false);
+  }
+}
+```
+
+#### 3.2 リスポンの確認画面を作成する
+
+1. 3.1と同様にTextとPanelを使って確認画面を作成する
+2. 2.2で作成した Respawn.cs を以下のように書き換える
+   + BallがRespawnの枠内に入ったらボールを消して、リスポン確認画面を表示させる
+   + Updateでは_retryがtrueかつ右クリックが押されたらGameSceneをロードさせる
+
+```cs
+public class Respawn : MonoBehaviour
+{
+    [SerializeField] private GameObject ball;
+    [SerializeField] private GameObject respawn;
+    private bool _retry = false;
+
+    private void OnCollisionEnter(Collision other)
+    {
+        respawn.SetActive(true);
+        ball.SetActive(false);
+        _retry = true;
+    }
+
+    void Update ()
+    {
+        if (Input.GetMouseButtonDown (0) & _retry == true)
+        {
+            SceneManager.LoadScene("GameScene");
+        }
+    }
+}
+```
+
+#### 3.3 コントロールポイントの座標をスライダーで変更できるようにする
+
+1. UIからSliderを作成する
+2. Anchorsを左の中央にする
+3. SliderのMinValueを-10、MaxValueを10にする
+4. MoveSphere.csを作成してSliderにアタッチする
+
+```cs
+public class MoveSphere : MonoBehaviour
+{
+    [SerializeField] private GameObject sphere;
+    private Slider _slider;
+
+    private void Start()
+    {
+      _slider = gameObject.GetComponent<Slider>();
+      _slider.value = 0;
+    }
+
+    public void Move()
+    {
+      // gameobject.transform.position.y は値が変えられないのでいったんposを介して値を変える
+      var pos = sphere.transform.position;
+      pos.y = _slider.value;
+      sphere.transform.position = pos;
+    }
+}
+```
+
+5. sphere の部分に座標を操作したいコントロールポイントを設定する
+6. SliderのOn Value Changed を設定する
+   + ここで設定されたものはスライダーの値が変えられたときに呼ばれる
+
+    <img src=./images/Slider.png>
+
+7. 各コントロールポイントにスライダーを設定する
+
+#### 3.4 カメラを設定する
+
+1. MainCamera を選択するとSceneのウインドウの中にカメラのビューが表示される
+2. ゲーム画面にしたい、いい感じのアングルを設定する
+
+    <img src=./images/Camera.png width=500>
+
+#### 3.5 ゲームのスタート画面を作る
+
+1. Projectウインドウを右クリックしてCreateからSceneを作成する
+   + 名前は TitleScene とする
+2. SceneをTitleSceneに切り替える
+3. Respawn画面などでやったようにTitle画面を作成する
+
+    <img src=./images/Title.png width=500>
+
+4. Create Empty から空のGameObjectを作り、それにTitleSceneScriptをアタッチする
+   + 今はUnityエディタからRhinoInside を起動しているが、ビルドした単体のアプリとしてもRhinoInside を起動できるようにしなければいけないので、StartにRhinoInside を起動する部分をかく
+   + Updateには画面をクリックしたら先程まで作っていたGameSceneがロードされるようにしている
+
+```cs
+using System;
+using System.IO;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Rhino.Runtime.InProcess;
+
+public class TitleSceneScript : MonoBehaviour
+{
+  private void Start()
+  {
+    string RhinoSystemDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino WIP", "System");
+    var PATH = Environment.GetEnvironmentVariable("PATH");
+    Environment.SetEnvironmentVariable("PATH", PATH + ";" + RhinoSystemDir);
+    GC.SuppressFinalize(new RhinoCore(new string[] { "/scheme=Unity", "/nosplash" }, WindowStyle.Minimized));
+  }
+
+  void Update () {
+
+    if (Input.GetMouseButtonDown (0)) {
+      SceneManager.LoadScene("GameScene");
+    }
+  }
+}
+```
+
+### 4. ゲームとしてビルドする
+
++ File - Build Settingsを開く
++ Scene In Build で作成した2つのシーンを登録する
++ Architecture はx86_64 にする（多分デフォルトでこのあたい）
++ PlayerSettings から OtherSettingsから ScriptingBackend をMono、Api Compatibility Level を .Net 4.x にする
++ Buildする
++ 完成！！！！！
+
+## まとめ
+
++ 最終版は final version のものになっています。
++ ほとんどUnityでしたが、うまく動きましたでしょうか。
++ RhinoInside の部分は、RhinoInsideのリポのUnityフォルダのsample1のものを参考にしています。
++ 質問は [Tokyo AEC Industry Dev Group](https://www.meetup.com/ja-JP/Tokyo-AEC-Industry-Dev-Group/events/gdqbsrybckbgb/) のハンズオンのページ、またはTokyo AEC Industry Dev GroupのDiscord、直接私に聞きたい場合は[Twitterアカウント](https://twitter.com/hiron_rgkr)へDMください。
