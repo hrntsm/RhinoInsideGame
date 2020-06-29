@@ -454,7 +454,33 @@ public class TitleSceneScript : MonoBehaviour
 + Architecture はx86_64 にする（多分デフォルトでこのあたい）
 + PlayerSettings から OtherSettingsから ScriptingBackend をMono、Api Compatibility Level を .Net 4.x にする
 + Buildする
+
 + 完成！！！！！
+
+### 5. その他
+
++ Build SettingでBuildしたものでもスクリプトのデバッグできる設定がある
+
+  <img src=./images/BuildDebug.png width=500>
+
++ 起動時にRhinoInsideの起動の待ちが気になる
+  + 該当箇所を非同期処理に書き換える
+  + Task.Runを使って非同期化
+    + うまくCancellationTokenを設定できてないので、強制終了しかできない…
+
+```cs
+public class TitleSceneScript : MonoBehaviour
+{
+    void Start()
+    {
+        string RhinoSystemDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino WIP", "System");
+        var PATH = Environment.GetEnvironmentVariable("PATH");
+        Environment.SetEnvironmentVariable("PATH", PATH + ";" + RhinoSystemDir);
+        Task.Run(() =>
+           new RhinoCore(new string[] {"/scheme=Unity", "/nosplash"}, WindowStyle.Minimized));
+    }
+}
+```
 
 ## まとめ
 
