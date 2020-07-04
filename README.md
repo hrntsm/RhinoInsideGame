@@ -1,47 +1,47 @@
 # RhinoInsideGame
 
-これは2020/07/04に行われた[Tokyo AEC Industry Dev Group](https://www.meetup.com/ja-JP/Tokyo-AEC-Industry-Dev-Group/) でのハンズオンの資料になります。
-RhinoInside と Unity を使ったボールをゴールへ運ぶゲームのつくり方のハンズオンになります。
+This is a document from the hands-on session at the [Tokyo AEC Industry Dev Group](https://www.meetup.com/ja-JP/Tokyo-AEC-Industry-Dev-Group/) on July 04, 2020.
+Hands-on with RhinoInside and Unity to create a game where you can get the ball to the goal.
 
-## 完成品のイメージ
+## Image of finished product
 
 <img src=https://github.com/hrntsm/RhinoInsideGame/blob/master/images/RIUGame.gif width=500>
 
-## ハンズオン
+## Hands-on
 
-### 0. 環境構築
+### 0. Environment
 
-+ RhinoInsideのリポをクローンしておく（いくつかのファイルを使う）
-  + [ここ](https://github.com/mcneel/rhino.inside)からクローンorダウンロード
++ Clone RhinoInside Repository
+  + Download [here](https://github.com/mcneel/rhino.inside)
 + RhinoWIP
-  + [ここ](https://www.rhino3d.com/download/rhino/wip)からダウンロード
+  + Download [here](https://www.rhino3d.com/download/rhino/wip)
 + Unity2019.4.1.f1
-  + [ここ](https://unity3d.com/jp/get-unity/download)からダウンロード
+  + Download [here](https://unity3d.com/jp/get-unity/download)
 
-+ Rider2020.1 (スクリプトエディタ)
-  + コードを書くエディタです。VisualStudioやVSCodeなどでもよいです。
-  + Unity関連のデータをダウンロードをしておいてください。
-    + Riderの場合
-      + 特に追加でダウンロードするものはないです
-    + Visual Studioの場合
-      + Visual Studio Installerから以下のUnityに関するものをインストール
++ Rider2020.1
+  + VisualStudio, VSCode is okey
+  + Please install Unity debugger each software
+    + Rider
+      + Nothing to extra install file
+    + Visual Studio
+      + Install there things about unity from Visual Studio Installer
       <img src=./images/VS_Unity.png width=500>
-    + VS Codeの場合
-      + ExtensionsからDebugger for Unity をインストール
+    + VS Code
+      + Install Extensions of Debugger for Unity
       <img src=./images/VSC_Unity.png width=500>
-    + エディタの設定はUnityの以下から設定
+    + Editer setting in unity
     <img src=./images/EditorSettings.png width=500>
 
-### 1. UnityでRhinoを使う
+### 1. Using Rhino in Unity
 
-#### 1.1 RhinoInsideを起動できるようにする
+#### 1.1 Enabling RhinoInside to launch
 
-+ Asset下にScriptsという名前のフォルダを作成してそこに"Convert.cs"を入れる。"LoftSurface.cs"を作る
-+ Asset下にPluginsという名前のフォルダを作成してそこに"RhinoCommon.dll"を入れる。
-  + Convert.cs、RhinoCommon.dllはクローンしたリポの中に入っています。
-+ Asset下にEditorというフォルダを作成して、"RhinoInsideUI.cs"を作る
-  + Editorという名前のフォルダ名は特殊な扱いを受けるのでフォルダ名は間違えないで入れてください。
-+ 以下を書いて、エディタからRhinoを起動してみる
++ Create a folder under Asset named "Scripts" and put "Convert.cs " into Script folder and create "LoftSurface.cs"
++ Create a folder under Asset named "Plugins" and put it in the "RhinoCommon.dll" file.
+  + Convert.cs and RhinoCommon.dll are in cloned RhinoInside repository
++ Create a folder under Asset named "Editor" and create "RhinoInsideUI.cs
+  + The "Editor" named folder is used in special treatment, so please do not use the name of the folder by mistake.
++ Scripting the following in RhinoInisdeUI.cs and start Rhino from your Unity editor
 
 ```cs
 using System;
@@ -66,23 +66,23 @@ public class RhinoInsideUI : MonoBehaviour
 }
 ```
 
-#### 1.2 RhinoでSurfaceを作る
+#### 1.2 Make surface in Rhino
 
-+ ロフトサーフェスを作る
-  + まずはRhino内で作ってみる。
++ Make loft surface
+  + First, make it in Rhino
   <img src=./images/loftsurf.png width=500>
 
-#### 1.3 RhinoInside でSurfaceを作る
+#### 1.3 Make surface in Rhino"Inside"
 
-+ 次にRhinoInside を使って作ってみる。
-  + コントロールポイントをまず作る
++ Next, make it in RhinoInside
+  + Create a control point first.
 
 ```cs
 public class RhinoInsideUI : MonoBehaviour
 {
     public static void StartRhinoInside()
     {
-        // 省略
+        // ....
     }
 
     [MenuItem("Rhino/Create Loft Surface")]
@@ -97,22 +97,22 @@ public class RhinoInsideUI : MonoBehaviour
     {
         surface.AddComponent<MeshFilter>();
 
-        // Surfaceの色の設定
+        // Surface color
         var material = new Material(Shader.Find("Standard"))
         {
             color = new Color(1.0f, 0.0f, 0.0f, 1.0f)
         };
         surface.AddComponent<MeshRenderer>().material = material;
-        // 影を落とさないようにする
+        // dont receive shadow setting
         surface.GetComponent<MeshRenderer>().receiveShadows = false;
 
-        // コントロールポイントの色の設定
+        // control point color
         var cpMaterial = new Material(Shader.Find("Standard"))
         {
             color = new Color(0.2f, 0.2f, 0.8f, 1f)
         };
 
-        // コントロールポイントの作成
+        // make control point
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 4; j++)
@@ -130,7 +130,7 @@ public class RhinoInsideUI : MonoBehaviour
 }
 ```
 
-+ 作ったコントロールポイントを使ってロフトサーフェスを作る
++ Create a loft surface with the control points you've created
 
 ```cs
 using System.Collections;
@@ -183,39 +183,39 @@ public class LoftSurface : MonoBehaviour
 }
 ```
 
-これで"Rhino/Start RhinoInside" をした後に、"Rhino/Create Loft Surface"を押すとロフトサーフェスが作成されるはずです。
+Now, click on "Rhino/Start RhinoInside" and then  click on "Rhino/Create Loft Surface" to create a loft surface
 
 <img src=./images/LoftSurface.png width=500>
 
-ここまでの内容は、part1 のフォルダのデータになっています。
+The content up to now is the data in the folder in part 1 of this repo.
 
-#### 1.4 Unityのデバッグの仕方
+#### 1.4 How to debugging in Unity
 
-+ Unityにエディタをアタッチすることでデバッグできます
++ You can debug it by attaching a script editor to Unity
 
-**これで RhinoInside は終わり。あとはUnityのみになります。**
+**This is the end of RhinoInside part. We are now only in Unity.**
 
 ---
 
-### 2. ゲーム化する
+### 2. Gamified
 
-#### 2.1 ボールを弾ませる
+#### 2.1 Make the ball bounce
 
-1. Ballを作成する
-2. play▶してみる
-   + 何も行らない…
-3. RigidBodyをアタッチする
-   + 重力で落ちていくが貫通する…
-4. LoftSurfaceにMeshColliderをアタッチする
-   + Ballが弾まない…
-5. Materialsフォルダを作成してそこにPhysicMaterialを作成する。
-   + Bouncesを任意の値にして、BallとLoftSurfaceにアタッチする。
-6. ボールが弾む！！
-7. コントロールポイントを動かしてみる
-   + コライダーが反映されない…
-8. 動的にMeshColliderをアタッチできるようにする。
-   + LoftSurface.csに以下を追記
-   + アタッチされているゲームオブジェクトにMeshColliderがあれば削除し、新しいMeshColliderを設定する SetMeshCollider メソッドを追加している
+1. Make Ball
+2. Push play▶ buttom
+   + Nothing is going to happen...
+3. Attach RigidBody
+   + Gravity will cause the ball to fall, but it will pass through...
+4. Attach MeshCollider to LoftSurface
+   + The ball won't bounce...
+5. Create a Materials folder and create a PhysicMaterial in it.
+   + Set Bounces to an any value and attach it to Ball and LoftSurface.
+6. The ball bounces!
+7. Try to move the control point.
+   + The collider wouldn't reflect...
+8. Attach MeshCollider in runtime
+   + Add LoftSurface.cs below
+   + Removes the MeshCollider, if any, from the attached game object and adds a SetMeshCollider method to set a new MeshCollider.
 
 ```cs
 public class LoftSurface : MonoBehaviour
@@ -242,20 +242,19 @@ public class LoftSurface : MonoBehaviour
     {
         SetMeshCollider(gameObject);
         var controlPoints  = new List<List<Vector3>>();
-        // 以下省略...
+        // ...
 ```
 
-#### 2.2 ゲームオーバー時にゲームを再スタートできるようにする
+#### 2.2 To allow the game to be restarted when the game is over
 
-1. SampleScene の名前を GameScene に変える
-2. Cube を作成する
-   + 名前を Respawn にする
-3. LoftSurfaceの下の方に適当な距離をとって、X と Z の Scale を100にする
-   + ここに当たらないと再スタートしないので、位置に注意
-4. リスポンの判定に使うのみで、レンダーする必要なので MeshRenderer を非アクティブにする
-5. Add Component で Respawn.cs を追加する。
-   + コライダーに入ってきたら実行するメソッドOnCollisionEnterを使う
-   + シーンを読み込む形で再スタートを実装する
+1. Change the name "SampleScene" to "GameScene"
+2. Make Cube named "Respawn"
+3. Set the Scale of X and Z to 100 with the appropriate distance at the bottom of the LoftSurface
+   + If the ball doesn't hit here, it won't start again, so be careful where you are!
+4. Deactivate the MeshRenderer since it is only used to determine the respawn and it doesn't need to be rendered.
+5. Add Respawn.cs
+   + Use OnCollisionEnter, a method to be executed when GameObject come into the collider
+   + Implementing a restart in the form of loading a scene
 
 ```cs
 using UnityEngine;
@@ -270,18 +269,17 @@ public class Respawn : MonoBehaviour
 }
 ```
 
-#### 2.3 ゴールを作る
+#### 2.3 Create Goal
 
-1. Cube で作成する
-   + 名前を Goal にする
-2. ゴールにしたい個所に配置する
-   + スケールも好きな値に設定する
-   + 単純にこれがゲームの難しさになるので注意
-3. Add Component で Goal.cs を追加する。
-4. ゲームクリア時の画面を作成（次のところでまとめて作成するので後回し）
-5. ゲームクリアなのでBallを消す
-   + SerializeField をつけるとエディタ上から値を設定できるようになる
-   + Ballをエディタ上で設定する
+1. Create Cube named "Goal"
+2. Place it where you want it to be a goal.
+   + You can also set the scale to any value you want.
+   + Simply note that this is what makes the game so difficult.
+3. Add Goal.cs
+4. Create the screen when the game is cleared (we'll put it all together in the next part of the game, so we'll do that later).
+5. The game is clear, so deactive the ball.
+   + SerializeField atrribute allows you to set values from the editor
+   + Set Ball gameobject in editor
 
 ```cs
 public class Goal : MonoBehaviour
@@ -294,51 +292,51 @@ public class Goal : MonoBehaviour
 }
 ```
 
-#### 2.4 現状の確認
+#### 2.4 Status Check
 
-+ ここまで作るとUnityはこんなになっているはずです
++ This is what Unity should look like when you make it this far
 
 <img src=./images/GameScene.png width=500>
 
-+ ここまでのデータは part2 のフォルダ に入っているものになっています
++ The data so far is from the part2 folder
 
 ---
 
-### 3. UIを作っていく
+### 3. Create User Interface
 
-#### 3.1 クリア画面を作る
+#### 3.1 Create clear screen
 
-1. Hierarchyで右クリックして、UIからTextを選ぶとHierarchyにCanvasとEventSystemとCanvasの子にTextが作成される
-   + CanvasのサイズはGameウインドウのサイズによるので注意してください
+1. Right-clicking on the Hierarchy and selecting Text from the UI creates Canvas, EventSystem, and Text in Canvas's children in the Hierarchy
+   + Note that the size of the Canvas depends on the size of the Game window
 
     <img src=./images/UI.png width=500>
 
-2. Textにクリアを示す文字を入れる
-3. Panelを使って背景を入れる
-4. Panelの名前をGoalPanelにして、Textを子にする
-5. GoalPanelを非アクティブにする
-6. 2.3で作成したGoal.csに下記を追記して、BallがGoalに入った時にGoalPanelをアクティブにして表示されるようにする
-   + エディタからGoalPanelをセットしておく
+2. Put the character to indicate clear in Text
+3. Use Panel to add a background
+4. Name the Panel as GoalPanel and make Text a child
+5. Deactivating the GoalPanel
+6. Add the following script to Goal.cs created in 2.3, and when the ball enters the goal, you can add Make the GoalPanel active and visible
+   + Set up the GoalPanel from the editor
 
 ```cs
 public class Goal : MonoBehaviour
 {
   [SerializeField] private GameObject ball;
-  [SerializeField] private GameObject goalPanel; // 追加
+  [SerializeField] private GameObject goalPanel; // ADD
   private void OnTriggerEnter(Collider other)
   {
-    goalPanel.gameObject.SetActive(true); // 追加
+    goalPanel.gameObject.SetActive(true); // ADD
     ball.SetActive(false);
   }
 }
 ```
 
-#### 3.2 リスポンの確認画面を作成する
+#### 3.2 Creating a confirmation screen for a respawn
 
-1. 3.1と同様にTextとPanelを使って確認画面を作成する
-2. 2.2で作成した Respawn.cs を以下のように書き換える
-   + BallがRespawnの枠内に入ったらボールを消して、リスポン確認画面を表示させる
-   + Updateでは_retryがtrueかつ右クリックが押されたらGameSceneをロードさせる
+1. Create a confirmation screen with Text and Panel as in 3.1
+2. The Respawn.cs created in 2.2 is rewritten as follows
+   + When the ball is in the frame of Respawn, delete it and display the respawn confirmation screen.
+   + Update loads GameScene when _retry is true and the right click is pressed
 
 ```cs
 public class Respawn : MonoBehaviour
@@ -364,12 +362,12 @@ public class Respawn : MonoBehaviour
 }
 ```
 
-#### 3.3 コントロールポイントの座標をスライダーで変更できるようにする
+#### 3.3 Allows the control point coordinates to be changed with a slider
 
-1. UIからSliderを作成する
-2. Anchorsを左の中央にする
-3. SliderのMinValueを-10、MaxValueを10にする
-4. MoveSphere.csを作成してSliderにアタッチする
+1. Creating a Slider from the UI
+2. Anchors to the center left.
+3. Set Slider's MinValue to -10 and MaxValue to 10
+4. Create the MoveSphere.cs file and attach it to Slider
 
 ```cs
 public class MoveSphere : MonoBehaviour
@@ -385,7 +383,6 @@ public class MoveSphere : MonoBehaviour
 
     public void Move()
     {
-      // gameobject.transform.position.y は値が変えられないのでいったんposを介して値を変える
       var pos = sphere.transform.position;
       pos.y = _slider.value;
       sphere.transform.position = pos;
@@ -393,33 +390,33 @@ public class MoveSphere : MonoBehaviour
 }
 ```
 
-5. sphere の部分に座標を操作したいコントロールポイントを設定する
-6. SliderのOn Value Changed を設定する
-   + ここで設定されたものはスライダーの値が変えられたときに呼ばれる
+5. Set the control point whose coordinates you want to manipulate in the sphere
+6. Configuring Slider's OnValueChanged
+   + The one set here is called when the value of the slider is changed
 
     <img src=./images/Slider.png>
 
-7. 各コントロールポイントにスライダーを設定する
+7. Setting a slider for each control point
 
-#### 3.4 カメラを設定する
+#### 3.4 Setting up the camera
 
-1. MainCamera を選択するとSceneのウインドウの中にカメラのビューが表示される
-2. ゲーム画面にしたい、いい感じのアングルを設定する
+1. Selecting MainCamera displays the camera view in the Scene window
+2. You want to make it a game screen, set a good angle.
 
     <img src=./images/Camera.png width=500>
 
-#### 3.5 ゲームのスタート画面を作る
+#### 3.5 Create a game start screen
 
-1. Projectウインドウを右クリックしてCreateからSceneを作成する
-   + 名前は TitleScene とする
-2. SceneをTitleSceneに切り替える
-3. Respawn画面などでやったようにTitle画面を作成する
+1. Create a Scene from Create by right-clicking on the Project window
+   + Name it TitleScene
+2. Switch the Scene to TitleScene
+3. Create the Title screen as you did with the Respawn screen and so on.
 
     <img src=./images/Title.png width=500>
 
-4. Create Empty から空のGameObjectを作り、それにTitleSceneScriptをアタッチする
-   + 今はUnityエディタからRhinoInside を起動しているが、ビルドした単体のアプリとしてもRhinoInside を起動できるようにしなければいけないので、StartにRhinoInside を起動する部分をかく
-   + Updateには画面をクリックしたら先程まで作っていたGameSceneがロードされるようにしている
+4. Create an empty GameObject from CreateEmpty and attach TitleSceneScript to it
+   + The current application starts RhinoInside from the Unity editor, but we need to start RhinoInside as a standalone application, so we need to write the part that starts RhinoInside in Start
+   + In Update method, when you click on the screen, the GameScene you just created is loaded
 
 ```cs
 using System;
@@ -447,44 +444,22 @@ public class TitleSceneScript : MonoBehaviour
 }
 ```
 
-### 4. ゲームとしてビルドする
+---
 
-+ File - Build Settingsを開く
-+ Scene In Build で作成した2つのシーンを登録する
-+ Architecture はx86_64 にする（多分デフォルトでこのあたい）
-+ PlayerSettings から OtherSettingsから ScriptingBackend をMono、Api Compatibility Level を .Net 4.x にする
-+ Buildする
+### 4. Build as a Game
 
-+ 完成！！！！！
++ Open File-Build Settings
++ Add 2 scene to Scene In Build
++ Set Architecture x86_64
++ From PlayerSettings From OtherSettings ScriptingBackend to Mono, Api Compatibility Level to .Net 4.x
++ Build!!!
++ Finished! XDDDDDDDD
 
-### 5. その他
+---
 
-+ Build SettingでBuildしたものでもスクリプトのデバッグできる設定がある
+## Finally
 
-  <img src=./images/BuildDebug.png width=500>
-
-+ 起動時にRhinoInsideの起動の待ちが気になる
-  + 該当箇所を非同期処理に書き換える
-  + Task.Runを使って非同期化
-    + うまくCancellationTokenを設定できてないので、強制終了しかできない…
-
-```cs
-public class TitleSceneScript : MonoBehaviour
-{
-    void Start()
-    {
-        string RhinoSystemDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino WIP", "System");
-        var PATH = Environment.GetEnvironmentVariable("PATH");
-        Environment.SetEnvironmentVariable("PATH", PATH + ";" + RhinoSystemDir);
-        Task.Run(() =>
-           new RhinoCore(new string[] {"/scheme=Unity", "/nosplash"}, WindowStyle.Minimized));
-    }
-}
-```
-
-## まとめ
-
-+ 最終版は final version のものになっています。
-+ ほとんどUnityでしたが、うまく動きましたでしょうか。
-+ RhinoInside の部分は、RhinoInsideのリポのUnityフォルダのsample1のものを参考にしています。
-+ 質問は [Tokyo AEC Industry Dev Group](https://www.meetup.com/ja-JP/Tokyo-AEC-Industry-Dev-Group/events/gdqbsrybckbgb/) のハンズオンのページ、またはTokyo AEC Industry Dev GroupのDiscord、直接私に聞きたい場合は[Twitterアカウント](https://twitter.com/hiron_rgkr)へDMください。
++ The final version is in the "final version" folder.
++ It was mostly Unity, but I hope it worked well.
++ The RhinoInside section is based on sample 1 in the Unity folder of the RhinoInside repo.
++ For questions, contact [Tokyo AEC Industry Dev Group](https://www.meetup.com/en-JP/Tokyo-AEC-Industry-Dev-Group/events/gdqbsrybckbgb/) hands-on page, or Discord of Tokyo AEC Industry Dev Group, if you want to ask me directly, Please DM me at [my Twitter account](https://twitter.com/hiron_rgkr).
